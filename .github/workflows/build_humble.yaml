@@ -9,6 +9,9 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      distinct_id:
+
 
 jobs:
   build-and-test:
