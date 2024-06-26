@@ -37,10 +37,10 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from as2_core.declare_launch_arguments_from_config_file import DeclareLaunchArgumentsFromConfigFile
 from as2_core.launch_configuration_from_config_file import LaunchConfigurationFromConfigFile
-from launch_ros.actions import Node
+from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
-from launch import LaunchDescription
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -62,15 +62,15 @@ def generate_launch_description():
             name='platform_config_file', source_file=platform_config_file,
             description='Platform configuration file'),
         Node(
-            package="as2_platform_crazyflie",
-            executable="as2_platform_crazyflie_swarm_node",
-            name="platform",
-            output="screen",
+            package='as2_platform_crazyflie',
+            executable='as2_platform_crazyflie_swarm_node',
+            name='platform',
+            output='screen',
             emulate_tty=True,
             parameters=[
                 {
-                    "control_modes_file": LaunchConfiguration('control_modes_file'),
-                    "swarm_config_file": LaunchConfiguration('swarm_config_file')
+                    'control_modes_file': LaunchConfiguration('control_modes_file'),
+                    'swarm_config_file': LaunchConfiguration('swarm_config_file')
                 },
                 LaunchConfigurationFromConfigFile(
                     'platform_config_file',
