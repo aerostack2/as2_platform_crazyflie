@@ -1,5 +1,7 @@
 cf0:
   uri: radio://0/80/2M/E7E7E7E700
+  ip: "192.168.43.95" 
+  port: 5000 
 cf1:
   uri: radio://0/80/2M/E7E7E7E701
 cf2:
