@@ -1,3 +1,32 @@
+// Copyright 2024 Universidad Politécnica de Madrid
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//    * Redistributions of source code must retain the above copyright
+//      notice, this list of conditions and the following disclaimer.
+//
+//    * Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in the
+//      documentation and/or other materials provided with the distribution.
+//
+//    * Neither the name of the Universidad Politécnica de Madrid nor the names of its
+//      contributors may be used to endorse or promote products derived from
+//      this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+
 /*!*******************************************************************************************
  *  \file       crazyflie_platform.hpp
  *  \brief      Header for the crazyflie_platform interface.
@@ -32,11 +61,15 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************************************************************************/
-#ifndef CRAZYFLIE_PLATFORM_HPP_
-#define CRAZYFLIE_PLATFORM_HPP_
+#ifndef AS2_PLATFORM_CRAZYFLIE__CRAZYFLIE_PLATFORM_HPP_
+#define AS2_PLATFORM_CRAZYFLIE__CRAZYFLIE_PLATFORM_HPP_
 
 #include <Crazyflie.h>
 #include <Eigen/Dense>
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "as2_core/aerial_platform.hpp"
 #include "as2_core/names/topics.hpp"
@@ -55,12 +88,14 @@
 #include "sensor_msgs/msg/nav_sat_status.hpp"
 #include "std_msgs/msg/bool.hpp"
 
-struct logBattery {
+struct logBattery
+{
   float pm_vbat;
   uint8_t charge_percent;
 } __attribute__((packed));
 
-class CrazyfliePlatform : public as2::AerialPlatform {
+class CrazyfliePlatform : public as2::AerialPlatform
+{
   as2::tf::TfHandler tf_handler_;
   std::string base_frame_;
   std::string odom_frame_;
@@ -68,8 +103,8 @@ class CrazyfliePlatform : public as2::AerialPlatform {
 public:
   void init();
   CrazyfliePlatform();
-  CrazyfliePlatform(const std::string &ns, const std::string &radio_uri);
-  void configureParams(const std::string &radio_uri = "");
+  CrazyfliePlatform(const std::string & ns, const std::string & radio_uri);
+  void configureParams(const std::string & radio_uri = "");
 
   /*  --  AS2 FUNCTIONS --  */
 
@@ -77,20 +112,20 @@ public:
 
   bool ownSetArmingState(bool state) override;
   bool ownSetOffboardControl(bool offboard) override;
-  bool ownSetPlatformControlMode(const as2_msgs::msg::ControlMode &msg) override;
+  bool ownSetPlatformControlMode(const as2_msgs::msg::ControlMode & msg) override;
   bool ownSendCommand() override;
-  void ownKillSwitch() override { cf_->emergencyStop(); }
-  void ownStopPlatform() override { cf_->sendStop(); };
+  void ownKillSwitch() override {cf_->emergencyStop();}
+  void ownStopPlatform() override {cf_->sendStop();}
 
   /*  --  CRAZYFLIE FUNCTIONS --  */
 
   void listVariables();
   void pingCB();
-  void onLogIMU(uint32_t time_in_ms, std::vector<double> *values, void * /*userData*/);
-  void onLogOdomOri(uint32_t time_in_ms, std::vector<double> *values, void * /*userData*/);
-  void onLogOdomPos(uint32_t time_in_ms, std::vector<double> *values, void * /*userData*/);
+  void onLogIMU(uint32_t time_in_ms, std::vector<double> * values, void * /*userData*/);
+  void onLogOdomOri(uint32_t time_in_ms, std::vector<double> * values, void * /*userData*/);
+  void onLogOdomPos(uint32_t time_in_ms, std::vector<double> * values, void * /*userData*/);
   void onLogBattery();
-  void onLogRange(uint32_t time_in_ms, std::vector<double> *values, void * /*userData*/);
+  void onLogRange(uint32_t time_in_ms, std::vector<double> * values, void * /*userData*/);
   void updateOdom();
   void externalOdomCB(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
 
@@ -113,7 +148,7 @@ private:
 
   /*  --  SENSORS --  */
 
-  float initial_yaw_    = 0.0;
+  float initial_yaw_ = 0.0;
   bool has_initial_yaw_ = false;
 
   // Odometry
@@ -152,4 +187,4 @@ private:
   std::shared_ptr<LogBlockGeneric> range_logBlock_;
 };
 
-#endif
+#endif  // AS2_PLATFORM_CRAZYFLIE__CRAZYFLIE_PLATFORM_HPP_
