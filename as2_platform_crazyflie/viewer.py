@@ -75,8 +75,8 @@ import time
 import cv2
 from cv_bridge import CvBridge
 import numpy as np
-# import rclpy
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
 
 
@@ -109,11 +109,15 @@ class AIdeckPublisher(Node):
         deck_port = self.get_parameter('port').value
         self.declare_parameter('save_flag', False)
         self.declare_parameter('show_flag', False)
+        self.declare_parameter('balance_color', False)
+        self.declare_parameter('verbose', False)
 
         self.factors = [1.8648577393897736, 1.2606252586922309, 1.4528872589128194]
 
-        self.publisher_ = self.create_publisher(Image, 'aideck/image', 10)
-        timer_period = 0.1  # seconds
+        self.publisher_ = self.create_publisher(Image, 'sensor_measurements/camera/image_raw',
+                                                qos_profile_sensor_data)
+
+        timer_period = 0.2  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
 
@@ -164,8 +168,8 @@ class AIdeckPublisher(Node):
         # data_buffer = bytearray()
         # First get the info
         packet_info_raw = self.rx_bytes(4, client_socket)
-        # print(packetInfoRaw)
-        length, _ = struct.unpack('<HBB', packet_info_raw)
+        [length, routing, function] = struct.unpack('<HBB', packet_info_raw)
+
         # print("Length is {}".format(length))
         # print("Route is 0x{:02X}->0x{:02X}".format(routing & 0xF, routing >> 4))
         # print("Function is 0x{:02X}".format(function))
@@ -193,24 +197,22 @@ class AIdeckPublisher(Node):
                 chunk = self.rx_bytes(length - 2, client_socket)
                 img_stream.extend(chunk)
             self.count = self.count + 1
-            # mean_time_per_image = (time.time()-self.start) / self.count
 
             # TODO(fixme): Change to debug and rclpy
-            # print("{}".format(meanTimePerImage))
+            if self.get_parameter('verbose').value:
+                mean_time_per_image = (time.time()-self.start) / self.count
+                print(f'{mean_time_per_image=}')
             # print("{}".format(1/meanTimePerImage))
 
             if _format == 0:
                 bayer_img = np.frombuffer(img_stream, dtype=np.uint8)
                 bayer_img.shape = (244, 324)
                 color_img = cv2.cvtColor(bayer_img, cv2.COLOR_BayerBG2BGR)
-
-                k = cv2.waitKey(1)
-                if k == ord('b'):
-                    _, self.factors = balance_color(color_img)
                 if self.get_parameter('save_flag').value:
                     cv2.imwrite(f'stream_out/raw/img_{self.count:06d}.png', bayer_img)
                     cv2.imwrite(f'stream_out/debayer/img_{self.count:06d}.png', color_img)
                 if self.get_parameter('show_flag').value:
+                    _, self.factors = balance_color(color_img)
                     cv2.imshow('Raw', bayer_img)
                     cv2.imshow('Color', self.colorCorrectBayer(color_img, self.factors))
                     cv2.waitKey(1)
@@ -231,13 +233,18 @@ class AIdeckPublisher(Node):
     def timer_callback(self):
         """Call the getImage function and publishes the image."""
         msg = Image()
-        msg.header.frame_id = 'aideck'
+        msg.header.frame_id = self.get_namespace() + '/base_link/camera_link'
         msg.header.stamp = self.get_clock().now().to_msg()
         _format, imgs = self.getImage(self.client_socket)
 
         if imgs is not None and _format == 0:
             # self.get_logger().info('Publishing: "%s"' % self.i)
             img = imgs[-1]
-            msg = self.br.cv2_to_imgmsg(self.colorCorrectBayer(img, self.factors), encoding='bgr8')
+            if self.get_parameter('balance_color').value:
+                msg = self.br.cv2_to_imgmsg(
+                        self.colorCorrectBayer(img, self.factors), encoding='bgr8')
+            else:
+                msg = self.br.cv2_to_imgmsg(img, encoding='bgr8')
+
             self.publisher_.publish(msg)
             self.i += 1

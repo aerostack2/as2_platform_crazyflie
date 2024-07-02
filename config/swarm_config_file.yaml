@@ -1,12 +1,22 @@
-cf0:
-  uri: radio://0/80/2M/E7E7E7E700
-  ip: "192.168.43.95" 
-  port: 5000 
-cf1:
-  uri: radio://0/80/2M/E7E7E7E701
-cf2:
-  uri: radio://0/80/2M/E7E7E7E702
-cf3:
-  uri: radio://0/80/2M/E7E7E7E703
-cf4:
-  uri: radio://0/80/2M/E7E7E7E704
+/cf1:
+  platform:
+    ros__parameters:
+      uri: radio://0/33/2M/E7E7E7AAAC
+      cam_ip: "192.168.4.1" 
+      cam_port: 5000 
+
+# /cf2:
+#   platform:
+#     ros__parameters:
+#       uri: radio://0/80/2M/E7E7E7E700
+#       cam_ip: "192.168.4.1"
+#       cam_port: 5000 
+      
+# /cf3:
+#   platform:
+#     ros__parameters:
+#       uri: radio://0/80/2M/E7E7E7E701
+#       cam_ip: "192.168.4.1"
+#       cam_port: 5000 
+
+

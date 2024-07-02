@@ -61,6 +61,8 @@
  ********************************************************************************/
 
 #include <iostream>
+#include <string>
+
 #include <rclcpp/parameter_map.hpp>
 #include <rclcpp/utilities.hpp>
 #include "as2_core/core_functions.hpp"
@@ -72,6 +74,35 @@
 #define PARAMS_ARG_NAME "params-file"
 #define URI_ARG_NAME "uri"
 #define MEDIUM_FREQ_NODE 75
+
+/****************
+The structure of the params file can be in three ways:
+
+example1.yaml
+
+/**:
+  node_name:
+    ros__parameters:
+      uri: <your_uri>
+
+example2.yaml
+
+/cf1:
+  platform:
+    ros__parameters:
+      uri: <your_uri>
+
+
+example3.yaml
+
+/cf1:
+  ros__parameters:
+    uri: <your_uri>
+
+In the first example shall raise an error, since not namespaces has been given.
+In both the second and the third case, the code shall parse all the namespaces
+and collect them .
+ *****/
 
 std::string find_argument_value(const std::string & argument, int argc, char ** argv)
 {
@@ -106,6 +137,7 @@ YAML::Node traverse_map(const YAML::Node & node, const std::string & key)
   return res;
 }
 
+
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
@@ -132,25 +164,23 @@ int main(int argc, char * argv[])
   }
   std::cout << "Swarm config file: " << swarm_config_file << std::endl;
 
+  // find all the namespace in the config file
   YAML::Node swarm_config = YAML::LoadFile(swarm_config_file);
   for (YAML::const_iterator it = swarm_config.begin(); it != swarm_config.end(); ++it) {
     std::string name = it->first.as<std::string>();
-    YAML::Node node_config = it->second;
-    if (node_config.IsMap()) {
-      for (YAML::const_iterator it2 = node_config.begin(); it2 != node_config.end(); ++it2) {
-        std::string key = it2->first.as<std::string>();
-        if (key == URI_ARG_NAME) {
-          std::string value = it2->second.as<std::string>();
-          std::cout << "Creating node " << name << " with uri " << value << std::endl;
-          nodes.emplace_back(std::make_shared<CrazyfliePlatform>(name, value));
-        }
-      }
+    if (name.find("/**") != std::string::npos) {
+      continue;
     }
+    YAML::Node node_config = it->second;
+    auto result = traverse_map(node_config, "uri").as<std::string>();
+    if (result == "null") {
+      continue;
+    }
+
+    // std::cout << "Drone: " << name << " at uri: " << result << " found." << std::endl;
+    nodes.emplace_back(std::make_shared<CrazyfliePlatform>(name));
   }
 
-  /* auto cf_0 = std::make_shared<CrazyfliePlatform>("cf0", "radio://0/80/2M/E7E7E7E700");
-  auto cf_1 = std::make_shared<CrazyfliePlatform>("cf1", "radio://0/80/2M/E7E7E7E701");
-  auto cf_2 = std::make_shared<CrazyfliePlatform>("cf2", "radio://0/80/2M/E7E7E7E702"); */
   if (nodes.empty()) {
     std::cout << "No nodes created. Exiting." << std::endl;
     rclcpp::shutdown();

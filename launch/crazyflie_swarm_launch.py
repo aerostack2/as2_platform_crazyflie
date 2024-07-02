@@ -74,7 +74,8 @@ def generate_launch_description():
                     'control_modes_file': LaunchConfiguration('control_modes_file'),
                     'swarm_config_file': LaunchConfiguration('swarm_config_file')
                 },
-                LaunchConfiguration('platform_config_file')
+                LaunchConfiguration('platform_config_file'),
+                LaunchConfiguration('swarm_config_file')
             ],
         )
     ])
