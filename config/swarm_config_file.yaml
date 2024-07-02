@@ -20,6 +20,8 @@
       cam:
         ip: "192.168.4.1"  # Mandatory for launching IP camera node
         port: 5000   
+        calibration_file: "camera_calibration.yaml"
+
 /cf2:
   platform:
     ros__parameters:

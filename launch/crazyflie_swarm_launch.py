@@ -29,6 +29,8 @@
 
 """Launch Crazyflie Swarm platform node."""
 
+import os
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
@@ -63,19 +65,50 @@ def get_drones_with_cam(swarm_config_path) -> list:
         # find cam key in the dict recursively
         cam = find_elem_in_dict(value, 'cam')
         if cam is not None and isinstance(cam, dict) and 'ip' in cam:
-            drones_with_cam.append((ns, cam))
             # print(f'{ns} : Found cam: {cam}')
+            calib_file = ''
+            if 'calibration_file' in cam:
+                print(f'{ns} : Found cam: {cam["ip"]} \
+with calibration file: {cam["calibration_file"]}')
+                calib_file = cam['calibration_file']
+            drones_with_cam.append((ns, calib_file))
 
     print(f'Found {len(drones_with_cam)} drones with camera')
     return drones_with_cam
+
+
+def find_calibration_file(filepath, context):
+    """Find calibration file. first in the context. if not found try in the config path."""
+    # print(f'Looking for calibration file: {filepath}')
+    if os.path.exists(filepath):
+        return filepath
+
+    config_based_path = PathJoinSubstitution([FindPackageShare('as2_platform_crazyflie'),
+                                             'config', filepath]).perform(context)
+    # print(f'Looking for calibration file in: {config_based_path}')
+    if os.path.exists(config_based_path):
+        # print(f'Calibration file found: {config_based_path}')
+        return config_based_path
+
+    print(f'Calibration file not found: {filepath}')
+
+    return None
 
 
 def get_camera_launch_description(context, *args, **kwargs):
     """Get the camera launch description."""
     swarm_config_file = context.launch_configurations['swarm_config_file']
     drones_with_cam = get_drones_with_cam(swarm_config_file)
+    print(drones_with_cam)
     launch_description = []
-    for ns, _ in drones_with_cam:
+    for ns, calib_file in drones_with_cam:
+        params = [LaunchConfiguration('swarm_config_file')]
+        if calib_file != '':
+            cam_calib_file = find_calibration_file(calib_file, context)
+            if cam_calib_file is not None:
+                print(f'Calibration file found: {cam_calib_file}')
+                params.append(cam_calib_file)
+
         launch_description.append(
             Node(
                 package='as2_platform_crazyflie',
@@ -84,9 +117,7 @@ def get_camera_launch_description(context, *args, **kwargs):
                 namespace=ns,
                 output='screen',
                 emulate_tty=True,
-                parameters=[
-                    LaunchConfiguration('swarm_config_file')
-                ],
+                parameters=params
             )
         )
     return launch_description
@@ -120,20 +151,20 @@ def generate_launch_description():
                               default_value=swarm_config_file,
                               description='Platform swarm URI configuration file'),
 
-        Node(
-            package='as2_platform_crazyflie',
-            executable='as2_platform_crazyflie_swarm_node',
-            name='platform',
-            output='screen',
-            emulate_tty=True,
-            parameters=[
-                {
-                    'control_modes_file': LaunchConfiguration('control_modes_file'),
-                    'swarm_config_file': LaunchConfiguration('swarm_config_file')
-                },
-                LaunchConfiguration('platform_config_file'),
-                LaunchConfiguration('swarm_config_file')
-            ],
-        ),
+        # Node(
+        #     package='as2_platform_crazyflie',
+        #     executable='as2_platform_crazyflie_swarm_node',
+        #     name='platform',
+        #     output='screen',
+        #     emulate_tty=True,
+        #     parameters=[
+        #         {
+        #             'control_modes_file': LaunchConfiguration('control_modes_file'),
+        #             'swarm_config_file': LaunchConfiguration('swarm_config_file')
+        #         },
+        #         LaunchConfiguration('platform_config_file'),
+        #         LaunchConfiguration('swarm_config_file')
+        #     ],
+        # ),
         OpaqueFunction(function=get_camera_launch_description)
     ])
