@@ -103,14 +103,14 @@ class AIdeckPublisher(Node):
 
         # Args for setting IP/port of AI-deck. Default settings are for when
         # AI-deck is in AP mode.
-        self.declare_parameter('ip', '192.168.4.1')
-        deck_ip = self.get_parameter('ip').value
-        self.declare_parameter('port', 5000)
-        deck_port = self.get_parameter('port').value
-        self.declare_parameter('save_flag', False)
-        self.declare_parameter('show_flag', False)
-        self.declare_parameter('balance_color', False)
-        self.declare_parameter('verbose', False)
+        self.declare_parameter('cam.ip', '192.168.4.1')
+        self.declare_parameter('cam.port', 5000)
+        self.declare_parameter('cam.save_flag', False)
+        self.declare_parameter('cam.show_flag', False)
+        self.declare_parameter('cam.balance_color', False)
+        self.declare_parameter('cam.verbose', False)
+        deck_ip = self.get_parameter('cam.ip').value
+        deck_port = self.get_parameter('cam.port').value
 
         self.factors = [1.8648577393897736, 1.2606252586922309, 1.4528872589128194]
 
@@ -199,7 +199,7 @@ class AIdeckPublisher(Node):
             self.count = self.count + 1
 
             # TODO(fixme): Change to debug and rclpy
-            if self.get_parameter('verbose').value:
+            if self.get_parameter('cam.verbose').value:
                 mean_time_per_image = (time.time()-self.start) / self.count
                 print(f'{mean_time_per_image=}')
             # print("{}".format(1/meanTimePerImage))
@@ -208,22 +208,22 @@ class AIdeckPublisher(Node):
                 bayer_img = np.frombuffer(img_stream, dtype=np.uint8)
                 bayer_img.shape = (244, 324)
                 color_img = cv2.cvtColor(bayer_img, cv2.COLOR_BayerBG2BGR)
-                if self.get_parameter('save_flag').value:
+                if self.get_parameter('cam.save_flag').value:
                     cv2.imwrite(f'stream_out/raw/img_{self.count:06d}.png', bayer_img)
                     cv2.imwrite(f'stream_out/debayer/img_{self.count:06d}.png', color_img)
-                if self.get_parameter('show_flag').value:
+                if self.get_parameter('cam.show_flag').value:
                     _, self.factors = balance_color(color_img)
                     cv2.imshow('Raw', bayer_img)
                     cv2.imshow('Color', self.colorCorrectBayer(color_img, self.factors))
                     cv2.waitKey(1)
                 imgs = [bayer_img, color_img]
             else:
-                if self.get_parameter('save_flag').value:
+                if self.get_parameter('cam.save_flag').value:
                     with open('img.jpeg', 'wb') as f:
                         f.write(img_stream)
                 nparr = np.frombuffer(img_stream, np.uint8)
                 decoded = cv2.imdecode(nparr, cv2.IMREAD_UNCHANGED)
-                if self.get_parameter('show_flag').value:
+                if self.get_parameter('cam.show_flag').value:
                     cv2.imshow('JPEG', decoded)
                     cv2.waitKey(1)
                 imgs = [decoded]
@@ -240,7 +240,7 @@ class AIdeckPublisher(Node):
         if imgs is not None and _format == 0:
             # self.get_logger().info('Publishing: "%s"' % self.i)
             img = imgs[-1]
-            if self.get_parameter('balance_color').value:
+            if self.get_parameter('cam.balance_color').value:
                 msg = self.br.cv2_to_imgmsg(
                         self.colorCorrectBayer(img, self.factors), encoding='bgr8')
             else:
