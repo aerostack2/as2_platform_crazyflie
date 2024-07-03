@@ -202,14 +202,10 @@ class AIdeckPublisher(Node):
 
     def declare_static_transforms(self):
         """Declare the static transforms."""
-        camera_transform = get_transform(0.02, 0, 0.01, 0, 0, 0)
+        camera_transform = get_transform(0.02, 0, 0.01, -math.pi/2.0, 0, -math.pi/2.0)
         camera_transform.header.frame_id = f'{self.get_namespace()}/base_link'
-        camera_transform.child_frame_id = f'{self.get_namespace()}/{self.camera_name}'
+        camera_transform.child_frame_id = self.camera_frame_id
         self.tf_static_broadcaster.sendTransform(camera_transform)
-        link_transform = get_transform(0.0, 0, 0, -math.pi/2.0, 0, -math.pi/2.0)
-        link_transform.header.frame_id = f'{self.get_namespace()}/{self.camera_name}'
-        link_transform.child_frame_id = self.camera_frame_id
-        self.tf_static_broadcaster.sendTransform(link_transform)
 
     def read_camera_parameters(self):
         """Read the camera parameters."""
