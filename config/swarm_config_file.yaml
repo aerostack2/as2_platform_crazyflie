@@ -27,7 +27,6 @@
         ip: "192.168.0.109"
         port: 5000   
         calibration_file: "camera_calibration.yaml"
-        flip_image: true # IDK why is needed when going IP 
 
 # /cf2:
 #   platform:
