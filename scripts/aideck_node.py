@@ -31,16 +31,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+from time import sleep
+
 from as2_platform_crazyflie.viewer import AIdeckPublisher
 import rclpy
-from time import sleep
+
 
 def main(args=None):
     """Entrypoint."""
     rclpy.init(args=args)
     stream_pub = AIdeckPublisher()
     # rclpy.spin(stream_pub)
-    
     while rclpy.ok():
         rclpy.spin_once(stream_pub)
         sleep(0.01)

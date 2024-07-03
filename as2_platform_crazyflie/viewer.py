@@ -153,13 +153,13 @@ class AIdeckPublisher(Node):
         self.declare_parameter('cam.balance_color', False)
         self.declare_parameter('cam.verbose', False)
         self.declare_parameter('cam.flip_image', False)
-        
+
         deck_ip = self.get_parameter('cam.ip').value
         if deck_ip == 'None':
             print('No IP provided, using default IP')
             exit(1)
         print(f'IP: {deck_ip}')
-        
+
         deck_port = self.get_parameter('cam.port').value
 
         self.factors = [1.8648577393897736, 1.2606252586922309, 1.4528872589128194]
