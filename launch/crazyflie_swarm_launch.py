@@ -60,7 +60,7 @@ def get_drones_with_cam(swarm_config_path) -> list:
     for ns, value in swarm_config.items():
         if ns.startswith('/'):
             ns = ns[1:]
-        if ns.find('**') != -1:
+        if ns.startswith('/**'):
             continue
         # find cam key in the dict recursively
         cam = find_elem_in_dict(value, 'cam')

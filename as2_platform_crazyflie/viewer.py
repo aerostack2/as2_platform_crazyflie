@@ -140,19 +140,26 @@ class AIdeckPublisher(Node):
 
     def __init__(self):
         """Construct the publisher."""
-        super().__init__('aideck_stream_publisher')
+        super().__init__('aideck_pub')
 
         self.camera_info_msg = CameraInfo()
 
         # Args for setting IP/port of AI-deck. Default settings are for when
         # AI-deck is in AP mode.
-        self.declare_parameter('cam.ip', '192.168.4.1')
+        self.declare_parameter('cam.ip', 'None')
         self.declare_parameter('cam.port', 5000)
         self.declare_parameter('cam.save_flag', False)
         self.declare_parameter('cam.show_flag', False)
         self.declare_parameter('cam.balance_color', False)
         self.declare_parameter('cam.verbose', False)
+        self.declare_parameter('cam.flip_image', False)
+        
         deck_ip = self.get_parameter('cam.ip').value
+        if deck_ip == 'None':
+            print('No IP provided, using default IP')
+            exit(1)
+        print(f'IP: {deck_ip}')
+        
         deck_port = self.get_parameter('cam.port').value
 
         self.factors = [1.8648577393897736, 1.2606252586922309, 1.4528872589128194]
@@ -318,6 +325,10 @@ class AIdeckPublisher(Node):
                 bayer_img = np.frombuffer(img_stream, dtype=np.uint8)
                 bayer_img.shape = (244, 324)
                 color_img = cv2.cvtColor(bayer_img, cv2.COLOR_BayerBG2BGR)
+                if self.get_parameter('cam.flip_image').value:
+                    color_img = cv2.flip(color_img, 0)
+                    color_img = cv2.flip(color_img, 1)
+
                 if self.get_parameter('cam.save_flag').value:
                     cv2.imwrite(f'stream_out/raw/img_{self.count:06d}.png', bayer_img)
                     cv2.imwrite(f'stream_out/debayer/img_{self.count:06d}.png', color_img)

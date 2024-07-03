@@ -7,3 +7,4 @@
       show_flag: false # Show the data in a plot
       verbose: false # Show more info
       balance_color: false # Balance the color
+      flip_image: false # Flip the image if needed
