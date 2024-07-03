@@ -41,6 +41,10 @@ def generate_launch_description():
         FindPackageShare('as2_platform_crazyflie'),
         'config', 'aideck_config_file.yaml'
     ])
+    camera_calibration_file = PathJoinSubstitution([
+        FindPackageShare('as2_platform_crazyflie'),
+        'config', 'camera_calibration.yaml'
+    ])
 
     return LaunchDescription([
         DeclareLaunchArgument('namespace',
@@ -49,6 +53,9 @@ def generate_launch_description():
                               description='Drone namespace'),
         DeclareLaunchArgument('aideck_config_file',
                               default_value=aideck_config_file,
+                              description='Aideck configuration file'),
+        DeclareLaunchArgument('camera_calibration_file',
+                              default_value=camera_calibration_file,
                               description='Aideck configuration file'),
 
         Node(
@@ -59,7 +66,8 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[
-                LaunchConfiguration('aideck_config_file')
+                LaunchConfiguration('aideck_config_file'),
+                LaunchConfiguration('camera_calibration_file')
             ],
         )
     ])

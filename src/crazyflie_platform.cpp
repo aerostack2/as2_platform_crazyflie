@@ -69,12 +69,8 @@
 
 void CrazyfliePlatform::configureParams(const std::string & radio_uri)
 {
-  if (radio_uri.empty()) {
-    this->declare_parameter<std::string>("drone_URI", "radio://0/80/250K/E7E7E7E7E7");
-    this->get_parameter("drone_URI", uri_);
-  } else {
-    uri_ = radio_uri;
-  }
+  this->declare_parameter<std::string>("uri", "radio://0/80/250K/E7E7E7E7E7");
+  this->get_parameter("uri", uri_);
 }
 
 void CrazyfliePlatform::init()
@@ -90,7 +86,7 @@ void CrazyfliePlatform::init()
   /*    SET-UP    */
   do {
     try {
-      RCLCPP_DEBUG(this->get_logger(), "Connecting to: %s", uri_.c_str());
+      RCLCPP_INFO(this->get_logger(), "Connecting to: %s", uri_.c_str());
       cf_ = std::make_shared<Crazyflie>(uri_);
       is_connected_ = true;
     } catch (std::exception & e) {
@@ -191,6 +187,13 @@ CrazyfliePlatform::CrazyfliePlatform()
 : as2::AerialPlatform(), tf_handler_(this)
 {
   RCLCPP_INFO(this->get_logger(), "CrazyfliePlatform::CrazyfliePlatform");
+  configureParams();
+  init();
+}
+
+CrazyfliePlatform::CrazyfliePlatform(const std::string & ns)
+: as2::AerialPlatform(ns), tf_handler_(this)
+{
   configureParams();
   init();
 }

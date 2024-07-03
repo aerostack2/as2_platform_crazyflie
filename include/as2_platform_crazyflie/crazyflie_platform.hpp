@@ -103,7 +103,8 @@ class CrazyfliePlatform : public as2::AerialPlatform
 public:
   void init();
   CrazyfliePlatform();
-  CrazyfliePlatform(const std::string & ns, const std::string & radio_uri);
+  explicit CrazyfliePlatform(const std::string & ns);
+  explicit CrazyfliePlatform(const std::string & ns, const std::string & radio_uri);
   void configureParams(const std::string & radio_uri = "");
 
   /*  --  AS2 FUNCTIONS --  */
