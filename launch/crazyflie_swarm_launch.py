@@ -150,21 +150,20 @@ def generate_launch_description():
         DeclareLaunchArgument('swarm_config_file',
                               default_value=swarm_config_file,
                               description='Platform swarm URI configuration file'),
-
-        # Node(
-        #     package='as2_platform_crazyflie',
-        #     executable='as2_platform_crazyflie_swarm_node',
-        #     name='platform',
-        #     output='screen',
-        #     emulate_tty=True,
-        #     parameters=[
-        #         {
-        #             'control_modes_file': LaunchConfiguration('control_modes_file'),
-        #             'swarm_config_file': LaunchConfiguration('swarm_config_file')
-        #         },
-        #         LaunchConfiguration('platform_config_file'),
-        #         LaunchConfiguration('swarm_config_file')
-        #     ],
-        # ),
+        Node(
+            package='as2_platform_crazyflie',
+            executable='as2_platform_crazyflie_swarm_node',
+            name='platform',
+            output='screen',
+            emulate_tty=True,
+            parameters=[
+                {
+                    'control_modes_file': LaunchConfiguration('control_modes_file'),
+                    'swarm_config_file': LaunchConfiguration('swarm_config_file')
+                },
+                LaunchConfiguration('platform_config_file'),
+                LaunchConfiguration('swarm_config_file')
+            ],
+        ),
         OpaqueFunction(function=get_camera_launch_description)
     ])
