@@ -2,8 +2,8 @@
 Changelog for package as2_platform_crazyflie
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2024-08-20)
+------------------
 * Update LICENSE to BSD-3
 * Fix camera frame tf
 * [fix] flake8 test
