@@ -2,6 +2,21 @@
 Changelog for package as2_platform_crazyflie
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update LICENSE to BSD-3
+* Fix camera frame tf
+* [fix] flake8 test
+* [feat] move parameters to ROS 2 standard
+* Fix AIDeckPublisher spin
+* Enable main node in swarm launch
+* Add camera calibration file param
+* [feat] add camera info
+* [feat] launch aideck node depending on params
+* [feat] pass ament_common tests
+* [CI] add CIs
+* Contributors: Miguel Fernandez-Cortizas, Rafael Perez-Segui, pariaspe
+
 1.0.9 (2024-03-25)
 ------------------
 
