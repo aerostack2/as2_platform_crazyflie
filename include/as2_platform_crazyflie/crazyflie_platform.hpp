@@ -144,6 +144,7 @@ private:
   uint8_t controller_type_;
   uint8_t estimator_type_;
   bool enable_multiranger_;
+  bool hardware_arming_;
 
   // rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr stop_sub_;
 

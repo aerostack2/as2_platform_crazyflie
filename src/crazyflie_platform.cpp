@@ -82,6 +82,12 @@ void CrazyfliePlatform::init()
   this->declare_parameter<bool>("multi_ranger_deck", false);  // Availability of multi-ranger deck
   this->get_parameter("multi_ranger_deck", enable_multiranger_);
 
+  this->declare_parameter<bool>("hardware_arming", false);
+  this->get_parameter("hardware_arming", hardware_arming_);
+  if (hardware_arming_) {
+    RCLCPP_INFO(this->get_logger(), "Hardware arming enabled (Crazyflie 2.1 brushless)");
+  }
+
   configureSensors();
   /*    SET-UP    */
   do {
@@ -454,7 +460,9 @@ bool CrazyfliePlatform::ownSendCommand()
 
 bool CrazyfliePlatform::ownSetArmingState(bool state)
 {
-  // Crazyflie does not have arming. Unarming will be used to stop the motors.
+  if (hardware_arming_) {
+    cf_->sendArmingRequest(state);
+  }
   if (!state) {
     RCLCPP_WARN(this->get_logger(), "STOP");
     cf_->sendStop();
