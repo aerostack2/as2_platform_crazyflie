@@ -179,7 +179,7 @@ void CrazyfliePlatform::init()
 }
 
 CrazyfliePlatform::CrazyfliePlatform()
-: as2::AerialPlatform(), tf_handler_(this)
+: as2::AerialPlatform()
 {
   RCLCPP_INFO(this->get_logger(), "CrazyfliePlatform::CrazyfliePlatform");
   configureParams();
@@ -187,14 +187,14 @@ CrazyfliePlatform::CrazyfliePlatform()
 }
 
 CrazyfliePlatform::CrazyfliePlatform(const std::string & ns)
-: as2::AerialPlatform(ns), tf_handler_(this)
+: as2::AerialPlatform(ns)
 {
   configureParams();
   init();
 }
 
 CrazyfliePlatform::CrazyfliePlatform(const std::string & ns, const std::string & radio_uri)
-: as2::AerialPlatform(ns), uri_(radio_uri), tf_handler_(this)
+: as2::AerialPlatform(ns), uri_(radio_uri)
 {
   RCLCPP_INFO(
     get_logger(), "CrazyfliePlatform constructor with ns[%s] and uri[%s]", ns.c_str(),
@@ -387,15 +387,7 @@ bool CrazyfliePlatform::ownSendCommand()
   const double yaw       = (eulerAngles[2] / 3.1416 * 180.0); */
   // this->command_twist_msg_.header.frame_id = "earth";
 
-  // bool out = tf_handler_.tryConvert(this->command_twist_msg_, odom_frame_);
-
-  // if (!out) {
-  //   RCLCPP_ERROR(this->get_logger(), "Could not convert command to odom frame");
-  //   return false;
-  // }
-
   if (platform_control_mode.yaw_mode == as2_msgs::msg::ControlMode::YAW_SPEED &&
-    platform_control_mode.reference_frame == as2_msgs::msg::ControlMode::LOCAL_ENU_FRAME &&
     this->getArmingState() && is_connected_)
   {
     switch (platform_control_mode.control_mode) {
@@ -462,10 +454,12 @@ bool CrazyfliePlatform::ownSetOffboardControl(bool offboard) {return is_connecte
 
 bool CrazyfliePlatform::ownSetPlatformControlMode(const as2_msgs::msg::ControlMode & msg)
 {
-  // Only the yaw speed modes implemented with ENU reference.
-  if (msg.yaw_mode == as2_msgs::msg::ControlMode::YAW_SPEED &&
-    msg.reference_frame == as2_msgs::msg::ControlMode::LOCAL_ENU_FRAME)
-  {
+  // The crazyflie setpoints are expressed in the local reference frame
+  setCommandPoseFrameId(odom_frame_);
+  setCommandTwistFrameId(odom_frame_);
+
+  // Only the yaw speed modes implemented.
+  if (msg.yaw_mode == as2_msgs::msg::ControlMode::YAW_SPEED) {
     switch (msg.control_mode) {
       case as2_msgs::msg::ControlMode::SPEED:
 
@@ -559,7 +553,7 @@ void CrazyfliePlatform::externalOdomCB(const geometry_msgs::msg::PoseStamped::Sh
   try {
     // pose obtained in odom frame to avoid yaw issues
     // auto pose = tf_handler.getPoseStamped(odom_frame, base_frame);
-    auto pose = tf_handler_.getPoseStamped(odom_frame_, base_frame_);
+    auto pose = tf_handler_->getPoseStamped(odom_frame_, base_frame_);
 
     // RCLCPP_INFO(get_logger(), " %f, %f, %f ", pose.pose.position.x, pose.pose.position.y,
     //             pose.pose.position.z);
