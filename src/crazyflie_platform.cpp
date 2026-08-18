@@ -69,8 +69,7 @@
 
 void CrazyfliePlatform::configureParams(const std::string & radio_uri)
 {
-  this->declare_parameter<std::string>("uri", "radio://0/80/250K/E7E7E7E7E7");
-  this->get_parameter("uri", uri_);
+  uri_ = this->getParameter<std::string>("uri", "radio://0/80/250K/E7E7E7E7E7");
 }
 
 void CrazyfliePlatform::init()
@@ -79,8 +78,8 @@ void CrazyfliePlatform::init()
   odom_frame_ = as2::tf::generateTfName(this, "odom");
 
   /*    PARAMETERS    */
-  this->declare_parameter<bool>("multi_ranger_deck", false);  // Availability of multi-ranger deck
-  this->get_parameter("multi_ranger_deck", enable_multiranger_);
+  // Availability of multi-ranger deck
+  enable_multiranger_ = this->getParameter<bool>("multi_ranger_deck", false);
 
   configureSensors();
   /*    SET-UP    */
@@ -101,15 +100,13 @@ void CrazyfliePlatform::init()
   listVariables();
 
   /*    CONFIGURATION    */
-  this->declare_parameter<uint8_t>(
-    "controller_type",
-    1);                                 // Any(0), PID(1), Mellinger(2), INDI(3)
-  this->get_parameter("controller_type", controller_type_);
+  // Any(0), PID(1), Mellinger(2), INDI(3)
+  controller_type_ = this->getParameter<uint8_t>("controller_type", 1);
   if (controller_type_ < 0 || controller_type_ > 3) {controller_type_ = 1;}
   cf_->setParamByName<uint8_t>("stabilizer", "controller", (uint8_t)(controller_type_));
 
-  this->declare_parameter<uint8_t>("estimator_type", 2);  // Any(0), Complementary(1), EKF(2)
-  this->get_parameter("estimator_type", estimator_type_);
+  // Any(0), Complementary(1), EKF(2)
+  estimator_type_ = this->getParameter<uint8_t>("estimator_type", 2);
   if (estimator_type_ < 0 || estimator_type_ > 2) {estimator_type_ = 2;}
   cf_->setParamByName<uint8_t>("stabilizer", "estimator", (uint8_t)(estimator_type_));  // EKF
 
@@ -162,10 +159,8 @@ void CrazyfliePlatform::init()
   }
 
   // External estimation
-  this->declare_parameter<bool>("external_odom", false);
-  this->get_parameter("external_odom", external_odom_);
-  this->declare_parameter<std::string>("external_odom_topic", "external_odom");
-  this->get_parameter("external_odom_topic", external_odom_topic_);
+  external_odom_ = this->getParameter<bool>("external_odom", false);
+  external_odom_topic_ = this->getParameter<std::string>("external_odom_topic", "external_odom");
 
   // If using external localization, create the subscriber to it
   if (external_odom_) {

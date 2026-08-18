@@ -101,33 +101,141 @@ class CrazyfliePlatform : public as2::AerialPlatform
   std::string odom_frame_;
 
 public:
+  /**
+   * @brief Connect to the Crazyflie, start its log blocks and create the
+   * publishers, subscriptions and timers of the platform.
+   */
   void init();
+
+  /**
+   * @brief Construct the Crazyflie platform with the default namespace and the
+   * radio uri taken from the uri parameter.
+   */
   CrazyfliePlatform();
+
+  /**
+   * @brief Construct the Crazyflie platform in a given namespace.
+   *
+   * @param ns Namespace of the drone.
+   */
   explicit CrazyfliePlatform(const std::string & ns);
+
+  /**
+   * @brief Construct the Crazyflie platform in a given namespace, overriding
+   * the radio uri.
+   *
+   * @param ns Namespace of the drone.
+   * @param radio_uri Crazyradio uri of the vehicle.
+   */
   explicit CrazyfliePlatform(const std::string & ns, const std::string & radio_uri);
+
+  /**
+   * @brief Declare and read the platform parameters.
+   *
+   * @param radio_uri Unused. The uri is read from the uri parameter.
+   */
   void configureParams(const std::string & radio_uri = "");
 
   /*  --  AS2 FUNCTIONS --  */
 
   void configureSensors() override;
 
+  /**
+   * @brief Arm or disarm the vehicle.
+   *
+   * @param state True to arm, false to disarm.
+   * @return true if the vehicle accepted the request.
+   */
   bool ownSetArmingState(bool state) override;
+  /**
+   * @brief Enter or leave offboard control.
+   *
+   * @param offboard True to take control, false to release it.
+   * @return true if the vehicle accepted the request.
+   */
   bool ownSetOffboardControl(bool offboard) override;
+  /**
+   * @brief Accept a control mode requested through the platform interface.
+   *
+   * @param msg Requested control mode.
+   * @return true if the platform accepts the mode.
+   */
   bool ownSetPlatformControlMode(const as2_msgs::msg::ControlMode & msg) override;
+  /**
+   * @brief Send the current actuator commands to the vehicle.
+   *
+   * @return true if the command was sent.
+   */
   bool ownSendCommand() override;
+  /**
+   * @brief Stop the motors immediately, without landing.
+   */
   void ownKillSwitch() override {cf_->emergencyStop();}
+  /**
+   * @brief Hold the vehicle in place with a zero setpoint.
+   */
   void ownStopPlatform() override {cf_->sendStop();}
 
   /*  --  CRAZYFLIE FUNCTIONS --  */
 
+  /**
+   * @brief Log the variables the connected Crazyflie exposes, for debugging.
+   */
   void listVariables();
+
+  /**
+   * @brief Poll the radio link, dispatching the pending log packets.
+   */
   void pingCB();
+
+  /**
+   * @brief Publish the IMU measurement of a gyro and accelerometer log packet.
+   *
+   * @param time_in_ms Timestamp of the packet, in ms since the vehicle booted.
+   * @param values {gyro.x, gyro.y, gyro.z, acc.x, acc.y, acc.z}.
+   */
   void onLogIMU(uint32_t time_in_ms, std::vector<double> * values, void * /*userData*/);
+
+  /**
+   * @brief Store the orientation of an odometry log packet.
+   *
+   * @param time_in_ms Timestamp of the packet, in ms since the vehicle booted.
+   * @param values Roll, pitch and yaw of the vehicle.
+   */
   void onLogOdomOri(uint32_t time_in_ms, std::vector<double> * values, void * /*userData*/);
+
+  /**
+   * @brief Store the position of an odometry log packet and publish the odometry.
+   *
+   * @param time_in_ms Timestamp of the packet, in ms since the vehicle booted.
+   * @param values Position and linear velocity of the vehicle.
+   */
   void onLogOdomPos(uint32_t time_in_ms, std::vector<double> * values, void * /*userData*/);
+
+  /**
+   * @brief Publish the battery level read from the vehicle.
+   */
   void onLogBattery();
+
+  /**
+   * @brief Publish the measurement of a range deck log packet.
+   *
+   * @param time_in_ms Timestamp of the packet, in ms since the vehicle booted.
+   * @param values Ranges of the multiranger deck.
+   */
   void onLogRange(uint32_t time_in_ms, std::vector<double> * values, void * /*userData*/);
+
+  /**
+   * @brief Publish the odometry built from the last stored position and
+   * orientation log packets.
+   */
   void updateOdom();
+
+  /**
+   * @brief Forward an external pose estimate to the Crazyflie estimator.
+   *
+   * @param msg Pose of the vehicle, from an external localization system.
+   */
   void externalOdomCB(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
 
   /*  --  AUX FUNCTIONS --  */
