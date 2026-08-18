@@ -96,7 +96,6 @@ struct logBattery
 
 class CrazyfliePlatform : public as2::AerialPlatform
 {
-  as2::tf::TfHandler tf_handler_;
   std::string base_frame_;
   std::string odom_frame_;
 
