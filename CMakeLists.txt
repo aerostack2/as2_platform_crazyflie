@@ -47,6 +47,7 @@ else()
   GIT_REPOSITORY https://github.com/miferco97/crazyflie_cpp.git
   # GIT_TAG 8b8391bc8e1899b4704723d22b5e4fa43ddef763
   GIT_TAG master
+  PATCH_COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/patches/add_arming_request.py
   )
   fetchcontent_makeavailable(crazyflie_cpp)
 endif()
