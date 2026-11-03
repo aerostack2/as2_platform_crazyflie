@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 set(PROJECT_NAME as2_platform_crazyflie)
 project(${PROJECT_NAME})
 
-# Default to C++17 (required by rclcpp from Jazzy on)
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
@@ -41,9 +41,7 @@ if(${crazyflie_cpp_FOUND})
   set(USE_CRAZYFLIE_COMPLETE_LIB ON)
 else()
   message(STATUS "crazyflie_cpp not found")
-  # crazyflie-link-cpp's Findlibusb.cmake only looks for a static libusb-1.0.a
-  # on macOS, which conda-forge and Homebrew do not ship by default. Seed its
-  # cache variables so the shared library is found instead.
+  # crazyflie-link-cpp only looks for a static libusb on macOS
   if(APPLE)
     find_library(LIBUSB_LIBRARY NAMES usb-1.0 libusb-1.0)
     find_path(LIBUSB_INCLUDE_DIR NAMES libusb.h PATH_SUFFIXES libusb-1.0)
@@ -52,17 +50,11 @@ else()
   fetchcontent_declare(
     crazyflie_cpp
     GIT_REPOSITORY https://github.com/miferco97/crazyflie_cpp.git
-    # Pinned for reproducible builds: master as of 2022-11-15.
     GIT_TAG b1aac13077633f7b505ed6c8029d587f18dece70
-    # Only crazyflie-link-cpp is needed; its own submodules (libusb, pybind11)
-    # are for Windows and the Python bindings.
     GIT_SUBMODULES crazyflie-link-cpp
     GIT_SUBMODULES_RECURSE OFF
   )
-  # Build the fetched libraries static and link them into the nodes: the
-  # package installs only its executables, and conda/colcon builds set
-  # BUILD_SHARED_LIBS=ON, which would leave uninstalled shared libraries and
-  # drop crazyflie_cpp's PRIVATE link to crazyflieLinkCpp from the nodes.
+  # Link the fetched libraries statically into the nodes
   set(_as2_cf_build_shared_libs ${BUILD_SHARED_LIBS})
   set(BUILD_SHARED_LIBS OFF)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
