@@ -49,6 +49,7 @@ else()
   GIT_TAG master
   )
   fetchcontent_makeavailable(crazyflie_cpp)
+  target_compile_options(crazyflieLinkCpp PRIVATE -include string)
 endif()
 
 set(HEADER_HPP_FILES
