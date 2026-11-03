@@ -64,9 +64,3 @@ jobs:
           source install/setup.bash
           colcon test --base-paths src --packages-select as2_platform_crazyflie \
             --return-code-on-test-failure
-      - name: Show failures
-        if: failure()
-        shell: bash
-        run: |
-          for f in log/latest_build/*/stderr.log; do [ -s "$f" ] && { echo "::group::$f"; cat "$f"; echo "::endgroup::"; }; done
-          [ -d build ] && colcon test-result --test-result-base build --verbose || true
