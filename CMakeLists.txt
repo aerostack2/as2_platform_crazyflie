@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 set(PROJECT_NAME as2_platform_crazyflie)
 project(${PROJECT_NAME})
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 #########################
 
@@ -49,6 +49,7 @@ else()
   GIT_TAG master
   )
   fetchcontent_makeavailable(crazyflie_cpp)
+  target_compile_options(crazyflieLinkCpp PRIVATE -include string)
 endif()
 
 set(HEADER_HPP_FILES
