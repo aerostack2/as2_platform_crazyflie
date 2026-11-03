@@ -41,7 +41,32 @@ jobs:
           repository: aerostack2/aerostack2
           ref: ${{ github.event.inputs.target_branch || 'main' }}
           path: src/aerostack2
-      - uses: aerostack2/aerostack2/.github/actions/colcon-build-test@main
-        with:
-          distro: ${{ matrix.distro }}
-          package: as2_platform_crazyflie
+      - name: Install dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          DISTRO: ${{ matrix.distro }}
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq python3-rosdep python3-colcon-common-extensions git > /dev/null
+          [ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || rosdep init
+          rosdep update --rosdistro "$DISTRO" > /dev/null
+          rosdep install -y -r -q --rosdistro "$DISTRO" --ignore-src --from-paths \
+            $(colcon list --base-paths src --paths-only --packages-up-to as2_platform_crazyflie)
+      - name: Build
+        shell: bash
+        run: |
+          source "/opt/ros/${{ matrix.distro }}/setup.bash"
+          colcon build --base-paths src --packages-up-to as2_platform_crazyflie
+      - name: Test
+        shell: bash
+        run: |
+          source "/opt/ros/${{ matrix.distro }}/setup.bash"
+          source install/setup.bash
+          colcon test --base-paths src --packages-select as2_platform_crazyflie \
+            --return-code-on-test-failure
+      - name: Show failures
+        if: failure()
+        shell: bash
+        run: |
+          for f in log/latest_build/*/stderr.log; do [ -s "$f" ] && { echo "::group::$f"; cat "$f"; echo "::endgroup::"; }; done
+          [ -d build ] && colcon test-result --test-result-base build --verbose || true
