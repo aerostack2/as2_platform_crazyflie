@@ -46,8 +46,8 @@ ros-humble-ament-pep257 = "*"
 ros-humble-ament-xmllint = "*"
 
 [environments]
-default = ["humble"]
-jazzy = ["jazzy"]
+default = ["jazzy"]
+humble = ["humble"]
 lint = { features = ["lint"], no-default-feature = true }
 
 [package]
