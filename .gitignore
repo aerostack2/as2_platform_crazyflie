@@ -7,3 +7,6 @@ libmotioncapture
 compile_commands.json
 launch/__pycache__/
 
+
+# pixi environments
+.pixi/

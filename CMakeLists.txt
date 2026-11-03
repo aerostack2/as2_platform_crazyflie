@@ -41,15 +41,26 @@ if(${crazyflie_cpp_FOUND})
   set(USE_CRAZYFLIE_COMPLETE_LIB ON)
 else()
   message(STATUS "crazyflie_cpp not found")
+  # crazyflie-link-cpp only looks for a static libusb on macOS
+  if(APPLE)
+    find_library(LIBUSB_LIBRARY NAMES usb-1.0 libusb-1.0)
+    find_path(LIBUSB_INCLUDE_DIR NAMES libusb.h PATH_SUFFIXES libusb-1.0)
+  endif()
   include(FetchContent)
   fetchcontent_declare(
-  crazyflie_cpp
-  GIT_REPOSITORY https://github.com/miferco97/crazyflie_cpp.git
-  # GIT_TAG 8b8391bc8e1899b4704723d22b5e4fa43ddef763
-  GIT_TAG master
+    crazyflie_cpp
+    GIT_REPOSITORY https://github.com/miferco97/crazyflie_cpp.git
+    GIT_TAG b1aac13077633f7b505ed6c8029d587f18dece70
+    GIT_SUBMODULES crazyflie-link-cpp
+    GIT_SUBMODULES_RECURSE OFF
   )
+  # Link the fetched libraries statically into the nodes
+  set(_as2_cf_build_shared_libs ${BUILD_SHARED_LIBS})
+  set(BUILD_SHARED_LIBS OFF)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   fetchcontent_makeavailable(crazyflie_cpp)
   target_compile_options(crazyflieLinkCpp PRIVATE -include string)
+  set(BUILD_SHARED_LIBS ${_as2_cf_build_shared_libs})
 endif()
 
 set(HEADER_HPP_FILES
