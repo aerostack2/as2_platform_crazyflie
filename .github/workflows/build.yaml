@@ -1,0 +1,41 @@
+name: build
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: Aerostack2 branch to build against
+        default: main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.distro }}
+    runs-on: ubuntu-latest
+    container: osrf/ros:${{ matrix.distro }}-desktop
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [humble, jazzy]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src/as2_platform_crazyflie
+      - uses: actions/checkout@v4
+        with:
+          repository: aerostack2/aerostack2
+          ref: ${{ github.event.inputs.target_branch || 'main' }}
+          path: src/aerostack2
+      - uses: aerostack2/aerostack2/.github/actions/colcon-build-test@main
+        with:
+          distro: ${{ matrix.distro }}
+          package: as2_platform_crazyflie
