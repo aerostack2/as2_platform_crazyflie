@@ -23,19 +23,13 @@ as2_platform_crazyflie = { path = "." }
 channels = ["robostack-jazzy"]
 
 [feature.jazzy.dependencies]
-ros-jazzy-ros2cli = ">=0.32.8,<0.33"
-ros-jazzy-ros2pkg = ">=0.32.8,<0.33"
-ros-jazzy-ros2launch = "*"
-ros-jazzy-ros2run = "*"
+ros-jazzy-ros-base = "*"
 
 [feature.humble]
 channels = ["robostack-humble"]
 
 [feature.humble.dependencies]
-ros-humble-ros2cli = ">=0.18.17,<0.19"
-ros-humble-ros2pkg = ">=0.18.17,<0.19"
-ros-humble-ros2launch = "*"
-ros-humble-ros2run = "*"
+ros-humble-ros-base = "*"
 
 [feature.lint]
 channels = ["robostack-humble", "conda-forge"]
